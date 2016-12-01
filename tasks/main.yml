@@ -1,0 +1,51 @@
+---
+- name: Add Dotdeb key
+  apt_key: url="https://www.dotdeb.org/dotdeb.gpg" state=present
+
+- name: Add Dotdeb repository
+  apt_repository: repo="deb https://packages.dotdeb.org jessie all" state=present update-cache=yes
+
+- name: update cache
+  action: apt update_cache=yes cache_valid_time=3600
+
+- name: Install packages
+  apt: name={{ item }} state=present
+  with_items:
+    - php7.0-apcu
+    - php7.0-cli
+    - php7.0-common
+    - php7.0-curl
+    - php7.0-fpm
+    - php7.0-gd
+    - php7.0-gmp
+    - php7.0-igbinary
+    - php7.0-imagick
+    - php7.0-imap
+    - php7.0-json
+    - php7.0-ldap
+    - php7.0-mbstring
+    - php7.0-mcrypt
+    - php7.0-memcached
+    - php7.0-msgpack
+    - php7.0-mysql
+    - php7.0-opcache
+    - php7.0-readline
+    - php7.0-redis
+    - php7.0-sqlite3
+    - php7.0-xml
+    - php7.0-xmlrpc
+    - php7.0-zip
+    - memcached
+    - redis-server
+    - nginx
+
+- name: Copy default config
+  template: src=default.j2 dest=/etc/nginx/sites-available/default owner=root group=root mode=0644
+  register: nginxconfig
+
+- service: name=nginx enabled=yes
+
+- service: name=nginx state=started
+
+- service: name=nginx state=restarted
+  when: nginxconfig.changed
